@@ -49,9 +49,37 @@ class Vector3D:
 
 class MassPoint:
     def __init__(self, mass, coordinates: Vector3D, velocity: Vector3D):
-        self.mass = mass
-        self.coor = coordinates
-        self.v = velocity
+        self.__mass = mass
+        self.__coor = coordinates
+        self.__v = velocity
+        self.__coor_history = []
+        self.__v_history = []
+
+    @property
+    def m(self):
+        return self.__mass
+
+    @property
+    def history(self):
+        return (self.__coor_history, self.__v_history)
+
+    @property
+    def v(self):
+        return self.__v
+
+    @v.setter
+    def v(self, value):
+        self.__v = value
+        self.__v_history.append(value)
+
+    @property
+    def coor(self):
+        return self.__coor
+
+    @coor.setter
+    def coor(self, value):
+        self.__coor = value
+        self.__coor_history.append(value)
 
 
 class Spring:
