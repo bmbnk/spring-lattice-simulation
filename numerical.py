@@ -13,7 +13,7 @@ def euler(mps: tuple[MassPoint], t, dt, as_: tuple):
 def verlet(mps: tuple[MassPoint], t, dt, as_: tuple):
     steps = range(int(t / dt))
 
-    a1 = [as_[i]() for i in range(len(a))]
+    a1 = [as_[i]() for i in range(len(as_))]
 
     for _ in steps:
         for i, mp in enumerate(mps):
