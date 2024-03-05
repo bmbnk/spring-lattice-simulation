@@ -95,7 +95,7 @@ class Spring:
         l = (self.__mp2.coor - self.__mp1.coor).len()
         dl = l - self.__l0
 
-        if dl < self.__l0:
+        if dl > self.__l0:
             raise Exception(
                 "Undefined behaviour of the spring. Mass points should colide or pass through each other."
             )
