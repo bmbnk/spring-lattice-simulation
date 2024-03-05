@@ -1,23 +1,24 @@
 from physics import MassPoint
 
 
-def euler(mps: list[MassPoint], t, dt, a):
+def euler(mps: tuple[MassPoint], t, dt, as_: tuple):
     steps = range(int(t / dt))
 
     for _ in steps:
-        for mp in mps:
+        for i, mp in enumerate(mps):
             mp.coor += mp.v * dt
-            mp.v += a() * dt
+            mp.v += as_[i]() * dt
 
 
-def verlet(mps: list[MassPoint], t, dt, a):
+def verlet(mps: tuple[MassPoint], t, dt, as_: tuple):
     steps = range(int(t / dt))
 
-    a1 = a()
+    a1 = [as_[i]() for i in range(len(a))]
+
     for _ in steps:
-        for mp in mps:
-            mp.coor += mp.v * dt + a1 * dt**2 / 2
-            a2 = a()
+        for i, mp in enumerate(mps):
+            mp.coor += mp.v * dt + a1[i] * dt**2 / 2
+            a2 = as_[i](mp)
             mp.v += (a2 + a1) * dt / 2
 
-            a1 = a2
+            a1[i] = a2

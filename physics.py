@@ -83,7 +83,26 @@ class MassPoint:
 
 
 class Spring:
-    def __init__(self, k, p1: MassPoint, p2: MassPoint):
-        self.p1 = p1
-        self.p2 = p2
-        self.k = k
+    def __init__(self, solver, k, l0, mp1: MassPoint, mp2: MassPoint):
+        self.direction = (mp2.coor - mp1.coor).normalize()
+        self.__mp1 = mp1
+        self.__mp2 = mp2
+        self.__k = k
+        self.__l0 = l0
+        self.__solver = solver
+
+    def force(self):
+        l = (self.__mp2.coor - self.__mp1.coor).len()
+        magnitude = -self.__k * (l - self.__l0)
+        return self.direction * magnitude
+
+    def simulate(self, t, dt):
+        self.__solver(
+            (self.__mp1, self.__mp2),
+            t,
+            dt,
+            (
+                lambda: self.force() / self.__mp1.m * -1,
+                lambda: self.force() / self.__mp2.m,
+            ),
+        )
