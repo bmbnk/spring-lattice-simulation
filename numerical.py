@@ -1,34 +1,21 @@
-def euler(m, k, l0, dt, t, l, v):
+from physics import MassPoint
+
+
+def euler(mp: MassPoint, t, dt, a):
     steps = range(int(t / dt))
 
-    ls = []
-    vs = []
     for _ in steps:
-        a = -k * (l - l0) / m
-        l = l + v * dt
-        v = v + a * dt
-
-        ls.append(l)
-        vs.append(v)
-
-    return ls, vs
+        mp.coor += mp.v * dt
+        mp.v += a() * dt
 
 
-def verlet(m, k, l0, dt, t, l, v):
+def verlet(mp: MassPoint, t, dt, a):
     steps = range(int(t / dt))
 
-    ls = []
-    vs = []
-
-    a1 = -k * (l - l0) / m
+    a1 = a()
     for _ in steps:
-        l = l + v * dt + a1 * dt**2 / 2
-        a2 = -k * (l - l0) / m
-        v = v + (a2 + a1) * dt / 2
+        mp.coor += mp.v * dt + a1 * dt**2 / 2
+        a2 = a()
+        mp.v += (a2 + a1) * dt / 2
 
         a1 = a2
-
-        ls.append(l)
-        vs.append(v)
-
-    return ls, vs
