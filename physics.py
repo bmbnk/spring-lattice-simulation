@@ -93,6 +93,12 @@ class Spring:
 
     def force(self):
         l = (self.__mp2.coor - self.__mp1.coor).len()
+        dl = l - self.__l0
+
+        assert (
+            dl < self.__l0
+        ), "Undefined behaviour of the spring. Mass points should colide or pass through each other."
+
         magnitude = -self.__k * (l - self.__l0)
         return self.direction * magnitude
 
