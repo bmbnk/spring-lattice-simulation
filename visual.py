@@ -10,12 +10,16 @@ FPS = 60
 COORS_DIR = "./data/coors.pkl"
 
 
-def update_fig(frame, coors, scats):
+def update_fig(frame, coors, scats, line):
+    points = []
     for scat, coor in zip(scats, coors):
         c = coor[frame]
-        scat.set_data((c.a1, c.a2))
+        scat.set_data(([c.a1], [c.a2]))
         scat.set_3d_properties(c.a3)
+        points.append(c)
 
+    line.set_data(([points[0].a1, points[1].a1], [points[0].a2, points[1].a2]))
+    line.set_3d_properties([points[0].a3, points[1].a3])
     return scats
 
 
@@ -38,7 +42,9 @@ num_steps = len(coors[0])
 
 fig = plt.figure()
 ax = fig.add_subplot(projection="3d")
+
 scats = [ax.plot(c[0].a1, c[0].a2, c[0].a3, c="r", marker="o")[0] for c in coors]
+line = ax.plot([], [], [])[0]
 
 ax.set(xlim3d=(-25, 25), xlabel="X")
 ax.set(ylim3d=(0, 50), ylabel="Y")
@@ -49,9 +55,9 @@ ani = animation.FuncAnimation(
     fig,
     update_fig,
     num_steps,
-    fargs=(coors, scats),
+    fargs=(coors, scats, line),
     interval=FPS,
-    blit=True,
+    blit=False,
 )
 
 plt.show()
