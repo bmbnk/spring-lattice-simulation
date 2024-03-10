@@ -1,24 +1,26 @@
+from typing import Iterable
+
 from physics import MassPoint
 
 
-def euler(mps: tuple[MassPoint], t, dt, as_: tuple):
+def euler(mps: Iterable[MassPoint], t, dt):
     steps = range(int(t / dt))
 
     for _ in steps:
-        for i, mp in enumerate(mps):
+        for mp in mps:
             mp.coor += mp.v * dt
-            mp.v += as_[i]() * dt
+            mp.v += mp.a() * dt
 
 
-def verlet(mps: tuple[MassPoint], t, dt, as_: tuple):
+def verlet(mps: Iterable[MassPoint], t, dt):
     steps = range(int(t / dt))
 
-    a1 = [as_[i]() for i in range(len(as_))]
+    a_prev = [mp.a() for mp in mps]
 
     for _ in steps:
-        for i, mp in enumerate(mps):
-            mp.coor += mp.v * dt + a1[i] * dt**2 / 2
-            a2 = as_[i]()
-            mp.v += (a2 + a1[i]) * dt / 2
+        for mp in mps:
+            mp.coor += mp.v * dt + a_prev * dt**2 / 2
+            a_next = mp.a()
+            mp.v += (a_prev + a_next) * dt / 2
 
-            a1[i] = a2
+            a_prev = a_next

@@ -1,4 +1,5 @@
 import math
+from typing import Callable
 
 
 class Vector3D:
@@ -54,23 +55,10 @@ class MassPoint:
         self.__v = velocity
         self.__coor_history = []
         self.__v_history = []
+        self.__forces = set()
 
-    @property
-    def m(self):
-        return self.__mass
-
-    @property
-    def history(self):
-        return (self.__coor_history, self.__v_history)
-
-    @property
-    def v(self):
-        return self.__v
-
-    @v.setter
-    def v(self, value):
-        self.__v = value
-        self.__v_history.append(value)
+    def add_force(self, force: Callable):
+        self.__forces.add(force)
 
     @property
     def coor(self):
@@ -81,6 +69,27 @@ class MassPoint:
         self.__coor = value
         self.__coor_history.append(value)
 
+    @property
+    def a(self):
+        return sum((f() for f in self.__forces)) / self.m
+
+    @property
+    def history(self):
+        return (self.__coor_history, self.__v_history)
+
+    @property
+    def m(self):
+        return self.__mass
+
+    @property
+    def v(self):
+        return self.__v
+
+    @v.setter
+    def v(self, value):
+        self.__v = value
+        self.__v_history.append(value)
+
 
 class Spring:
     def __init__(self, solver, k, l0, mp1: MassPoint, mp2: MassPoint):
@@ -89,6 +98,9 @@ class Spring:
         self.__k = k
         self.__l0 = l0
         self.__solver = solver
+
+        mp1.add_force(self.force)
+        mp2.add_force(self.force)
 
     def direction(self):
         return (self.__mp2.coor - self.__mp1.coor).normalize()
@@ -106,12 +118,4 @@ class Spring:
         return self.direction() * magnitude
 
     def simulate(self, t, dt):
-        self.__solver(
-            (self.__mp1, self.__mp2),
-            t,
-            dt,
-            (
-                lambda: self.force() / self.__mp1.m * -1,
-                lambda: self.force() / self.__mp2.m,
-            ),
-        )
+        self.__solver((self.__mp1, self.__mp2), t, dt)
