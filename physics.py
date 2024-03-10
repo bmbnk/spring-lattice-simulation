@@ -84,12 +84,14 @@ class MassPoint:
 
 class Spring:
     def __init__(self, solver, k, l0, mp1: MassPoint, mp2: MassPoint):
-        self.direction = (mp2.coor - mp1.coor).normalize()
         self.__mp1 = mp1
         self.__mp2 = mp2
         self.__k = k
         self.__l0 = l0
         self.__solver = solver
+
+    def direction(self):
+        return (self.__mp2.coor - self.__mp1.coor).normalize()
 
     def force(self):
         l = (self.__mp2.coor - self.__mp1.coor).len()
@@ -101,7 +103,7 @@ class Spring:
             )  # Add rebound by multiplying velocities by -0.8 for example at sticking point
 
         magnitude = -self.__k * (l - self.__l0)
-        return self.direction * magnitude
+        return self.direction() * magnitude
 
     def simulate(self, t, dt):
         self.__solver(
