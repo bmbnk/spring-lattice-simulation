@@ -98,7 +98,7 @@ class Spring:
         if dl > self.__l0:
             raise Exception(
                 "Undefined behaviour of the spring. Mass points should colide or pass through each other."
-            )
+            )  # Add rebound by multiplying velocities by -0.8 for example at sticking point
 
         magnitude = -self.__k * (l - self.__l0)
         return self.direction * magnitude
