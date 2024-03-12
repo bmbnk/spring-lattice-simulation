@@ -71,7 +71,10 @@ class MassPoint:
 
     @property
     def a(self):
-        return sum((f() for f in self.__forces)) / self.m
+        a = Vector3D(0, 0, 0)
+        for f in self.__forces:
+            a += f()
+        return a / self.m
 
     @property
     def history(self):
@@ -92,12 +95,11 @@ class MassPoint:
 
 
 class Spring:
-    def __init__(self, solver, k, l0, mp1: MassPoint, mp2: MassPoint):
+    def __init__(self, k, l0, mp1: MassPoint, mp2: MassPoint):
         self.__mp1 = mp1
         self.__mp2 = mp2
         self.__k = k
         self.__l0 = l0
-        self.__solver = solver
 
         mp1.add_force(self.force)
         mp2.add_force(self.force)
@@ -114,8 +116,5 @@ class Spring:
                 "Undefined behaviour of the spring. Mass points should colide or pass through each other."
             )  # Add rebound by multiplying velocities by -0.8 for example at sticking point
 
-        magnitude = -self.__k * (l - self.__l0)
+        magnitude = -self.__k * dl
         return self.direction() * magnitude
-
-    def simulate(self, t, dt):
-        self.__solver((self.__mp1, self.__mp2), t, dt)
