@@ -18,9 +18,9 @@ def verlet(mps: Iterable[MassPoint], t, dt):
     a_prev = [mp.a for mp in mps]
 
     for _ in steps:
-        for mp in mps:
-            mp.coor += mp.v * dt + a_prev * dt**2 / 2
+        for i, mp in enumerate(mps):
+            mp.coor += mp.v * dt + a_prev[i] * dt**2 / 2
             a_next = mp.a
-            mp.v += (a_prev + a_next) * dt / 2
+            mp.v += (a_prev[i] + a_next) * dt / 2
 
-            a_prev = a_next
+            a_prev[i] = a_next
