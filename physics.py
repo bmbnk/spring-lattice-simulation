@@ -135,3 +135,29 @@ class Spring:
 
         magnitude = -self.__k * dl
         return self.direction() * magnitude
+
+
+class System:
+    def __init__(self, coors, masses, connections, k_vals, s_lenghts, solver):
+        assert len(coors) == len(masses)
+        assert len(connections) == len(k_vals) == len(s_lenghts)
+
+        self.mps = []
+        self.springs = []
+        self.__solver = solver
+
+        for c, m in zip(coors, masses):
+            c_3d = [0] * 3
+            for i, coor in enumerate(c):
+                c_3d[i] = coor
+            c_3d = Vector3D(*c_3d)
+
+            mp = MassPoint(m, c_3d, Vector3D(0, 0, 0))
+            self.mps.append(mp)
+
+        for con, k, s_len in zip(connections, k_vals, s_lenghts):
+            spring = Spring(k, s_len, self.mps[con[0]], self.mps[con[1]])
+            self.springs.append(spring)
+
+    def simulate(self, t, dt):
+        self.__solver(self.mps, t, dt)
