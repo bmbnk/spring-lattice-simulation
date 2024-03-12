@@ -38,7 +38,7 @@ class Vector3D:
         return self.a1 * other.a1 + self.a2 * other.a2 + self.a3 * other.a3
 
     def __repr__(self):
-        return f"({self.a1}, {self.a2}, {self.a3})"
+        return f"{self.__class__.__name__}({self.a1}, {self.a2}, {self.a3})"
 
     def __sub__(self, other):
         return Vector3D(self.a1 - other.a1, self.a2 - other.a2, self.a3 - other.a3)
@@ -96,19 +96,36 @@ class MassPoint:
 
 class Spring:
     def __init__(self, k, l0, mp1: MassPoint, mp2: MassPoint):
-        self.__mp1 = mp1
-        self.__mp2 = mp2
+        self.mp1 = mp1
+        self.mp2 = mp2
         self.__k = k
         self.__l0 = l0
 
-        mp1.add_force(self.force)
-        mp2.add_force(self.force)
+        mp1.add_force(self.force_mp1)
+        mp2.add_force(self.force_mp2)
 
     def direction(self):
-        return (self.__mp2.coor - self.__mp1.coor).normalize()
+        return (self.mp2.coor - self.mp1.coor).normalize()
 
-    def force(self):
-        l = (self.__mp2.coor - self.__mp1.coor).len()
+    def force_mp1(self):
+        return self.direction() * -self.force_val()
+
+    def force_mp2(self):
+        return self.direction() * self.force_val()
+
+    def force_val(self):
+        l = (self.mp2.coor - self.mp1.coor).len()
+        dl = l - self.__l0
+
+        if dl > self.__l0:
+            raise Exception(
+                "Undefined behaviour of the spring. Mass points should colide or pass through each other."
+            )  # Add rebound by multiplying velocities by -0.8 for example at sticking point
+
+        return -self.__k * dl
+
+    def force2(self):
+        l = (self.mp2.coor - self.mp1.coor).len()
         dl = l - self.__l0
 
         if dl > self.__l0:
