@@ -4,58 +4,57 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
 DT = 1e-2
-SPEED_FACTOR = 40
+SPEED_FACTOR = 50
 FPS = 60
+SIM_STEP = int(SPEED_FACTOR / DT / FPS)
 
-COORS_DIR = "./data/coors.pkl"
+DATA_DIR = "./data/system.pkl"
 
 
-def update_fig(frame, coors, scats, line):
-    points = []
-    for scat, coor in zip(scats, coors):
-        c = coor[frame]
-        scat.set_data(([c.a1], [c.a2]))
-        scat.set_3d_properties(c.a3)
-        points.append(c)
+def update_fig(frame, system, scats, line):
+    time = frame * SIM_STEP
 
-    line.set_data(([points[0].a1, points[1].a1], [points[0].a2, points[1].a2]))
-    line.set_3d_properties([points[0].a3, points[1].a3])
+    for scat, mp in zip(scats, system.mps):
+        coor = mp.history[0][time]
+        scat.set_data(([coor.a1], [coor.a2]))
+        scat.set_3d_properties(coor.a3)
+
+    for line, spring in zip(lines, system.springs):
+        coor1 = spring.mp1.history[0][time]
+        coor2 = spring.mp2.history[0][time]
+
+        line.set_data(([coor1.a1, coor2.a1], [coor1.a2, coor2.a2]))
+        line.set_3d_properties([coor1.a3, coor2.a3])
     return scats
 
 
-def filter_frames(coors):
-    step = SPEED_FACTOR / DT / FPS
-    frames = int(len(coors[0]) / step)
-    new_coors = (
-        tuple(coors[0][int(i * step)] for i in range(frames)),
-        tuple(coors[1][int(i * step)] for i in range(frames)),
-    )
+with open(DATA_DIR, "rb") as f:
+    system = pkl.load(f)
 
-    return new_coors
-
-
-with open(COORS_DIR, "rb") as f:
-    coors = pkl.load(f)
-
-coors = filter_frames(coors)
-num_steps = len(coors[0])
 
 fig = plt.figure()
 ax = fig.add_subplot(projection="3d")
 
-scats = [ax.plot(c[0].a1, c[0].a2, c[0].a3, c="r", marker="o")[0] for c in coors]
-line = ax.plot([], [], [])[0]
+scats = [
+    ax.plot(
+        mp.history[0][0].a1, mp.history[0][0].a2, mp.history[0][0].a3, c="r", marker="o"
+    )[0]
+    for mp in system.mps
+]
+lines = [ax.plot([], [], [])[0] for _ in range(len(system.springs))]
+
 
 ax.set(xlim3d=(-25, 25), xlabel="X")
 ax.set(ylim3d=(0, 50), ylabel="Y")
 ax.set(zlim3d=(-50, 50), zlabel="Z")
 
 
+num_steps = int(len(system.mps[0].history[0]) / SIM_STEP)
 ani = animation.FuncAnimation(
     fig,
     update_fig,
     num_steps,
-    fargs=(coors, scats, line),
+    fargs=(system, scats, lines),
     interval=FPS,
     blit=False,
 )
