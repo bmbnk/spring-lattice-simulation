@@ -115,26 +115,7 @@ class Spring:
 
     def force_val(self):
         l = (self.mp2.coor - self.mp1.coor).len()
-        dl = l - self.__l0
-
-        if dl > self.__l0:
-            raise Exception(
-                "Undefined behaviour of the spring. Mass points should colide or pass through each other."
-            )  # Add rebound by multiplying velocities by -0.8 for example at sticking point
-
-        return -self.__k * dl
-
-    def force2(self):
-        l = (self.mp2.coor - self.mp1.coor).len()
-        dl = l - self.__l0
-
-        if dl > self.__l0:
-            raise Exception(
-                "Undefined behaviour of the spring. Mass points should colide or pass through each other."
-            )  # Add rebound by multiplying velocities by -0.8 for example at sticking point
-
-        magnitude = -self.__k * dl
-        return self.direction() * magnitude
+        return -self.__k * (l - self.__l0)
 
 
 class System:
