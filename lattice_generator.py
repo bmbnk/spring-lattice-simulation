@@ -52,10 +52,10 @@ def hex_lattice(n_hex_rows, n_hex_cols, l1, l2, alpha):
             n = len(coors)
             coors.append(coors[-1] + (l2_vec_up if (i + j) % 2 == 0 else l2_vec_down))
             connections.append((n - 1, n))
-            lenghts.append(l1)
+            lenghts.append(l2)
             if (i + j) % 2 == 1:
                 connections.append((n, n + n_cols))
-                lenghts.append(l2)
+                lenghts.append(l1)
 
         row_start += (
             l1_vec if i % 2 == 0 else l1_vec + 2 * x_vec * (x_vec @ l2_vec_down)
