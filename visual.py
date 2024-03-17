@@ -4,7 +4,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
 DT = 1e-2
-SPEED_FACTOR = 50
+SPEED_FACTOR = 100
 FPS = 60
 SIM_STEP = int(SPEED_FACTOR / DT / FPS)
 
