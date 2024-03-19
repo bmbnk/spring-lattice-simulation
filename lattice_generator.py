@@ -45,19 +45,20 @@ def hex_lattice(n_hex_rows, n_hex_cols, l1, l2, alpha):
     n_cols = (n_hex_cols + 1) * 2
     n_rows = n_hex_rows + 1
 
-    row_start = Vector3D(0, 0, 0)
+    next_coor = Vector3D(0, 0, 0)
     for i in range(n_rows):
-        coors.append(row_start)
-        for j in range(n_cols - 1):
-            n = len(coors)
-            coors.append(coors[-1] + (l2_vec_up if (i + j) % 2 == 0 else l2_vec_down))
-            connections.append((n - 1, n))
-            lenghts.append(l2)
-            if (i + j) % 2 == 1:
-                connections.append((n, n + n_cols))
+        for j in range(n_cols):
+            coors.append(next_coor)
+            idx = len(coors) - 1
+            if j < n_cols - 1:
+                next_coor = coors[-1] + (l2_vec_up if (i + j) % 2 == 0 else l2_vec_down)
+                connections.append((idx, idx + 1))
+                lenghts.append(l2)
+            if (i + j) % 2 == 0:
+                connections.append((idx, idx + n_cols))
                 lenghts.append(l1)
 
-        row_start += (
+        next_coor = coors[-n_cols] + (
             l1_vec if i % 2 == 0 else l1_vec + 2 * x_vec * (x_vec @ l2_vec_down)
         )
 
