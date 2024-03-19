@@ -128,16 +128,16 @@ class System:
         self.__solver = solver
 
         for c, m in zip(coors, masses):
-            c_3d = [0] * 3
-            for i, coor in enumerate(c):
-                c_3d[i] = coor
-            c_3d = Vector3D(*c_3d)
-
-            mp = MassPoint(m, c_3d, Vector3D(0, 0, 0))
+            mp = MassPoint(m, c, Vector3D(0, 0, 0))
             self.mps.append(mp)
 
         for con, k, s_len in zip(connections, k_vals, s_lenghts):
-            spring = Spring(k, s_len, self.mps[con[0]], self.mps[con[1]])
+            mps = []
+            for mp in self.mps:
+                if mp.coor in con:
+                    mps.append(mp)
+
+            spring = Spring(k, s_len, mps[0], mps[1])
             self.springs.append(spring)
 
     def simulate(self, t, dt):

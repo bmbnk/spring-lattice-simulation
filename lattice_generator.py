@@ -62,15 +62,37 @@ def hex_lattice(n_hex_rows, n_hex_cols, l1, l2, alpha):
             l1_vec if i % 2 == 0 else l1_vec + 2 * x_vec * (x_vec @ l2_vec_down)
         )
 
+    # Change indices in connections to coordinates
     i = 0
     while i < len(connections):
-        pair = connections[i]
-        if pair[0] >= len(coors) or pair[1] >= len(coors):
+        con = connections[i]
+        con_coors = []
+        for j in range(len(con)):
+            if con[j] < len(coors):
+                con_coors.append(coors[con[j]])
+
+        if len(con_coors) == 2:
+            connections[i] = (con_coors[0], con_coors[1])
+            i += 1
+        else:
             del connections[i]
             del lenghts[i]
+
+    # Remove connections to not existing points
+    i = 0
+    while i < len(coors):
+        idxs = []
+        for j in range(len(connections)):
+            if coors[i] in connections[j]:
+                idxs.append(j)
+                if len(idxs) > 1:
+                    break
+
+        if len(idxs) == 1:
+            del connections[idxs[0]]
+            del lenghts[idxs[0]]
+            del coors[i]
         else:
             i += 1
-
-    coors = [(c.a1, c.a2, c.a3) for c in coors]
 
     return coors, connections, lenghts
