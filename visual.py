@@ -4,9 +4,11 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
 DT = 1e-2
-SPEED_FACTOR = 100
+SPEED_FACTOR = 50
 FPS = 60
 SIM_STEP = int(SPEED_FACTOR / DT / FPS)
+SAVE = False
+VID_FILENAME = "test.mp4"
 
 DATA_DIR = "./data/system.pkl"
 
@@ -44,7 +46,7 @@ scats = [
 lines = [ax.plot([], [], [])[0] for _ in range(len(system.springs))]
 
 
-ax.set(xlim3d=(-25, 25), xlabel="X")
+ax.set(xlim3d=(0, 50), xlabel="X")
 ax.set(ylim3d=(0, 50), ylabel="Y")
 ax.set(zlim3d=(-50, 50), zlabel="Z")
 
@@ -58,5 +60,8 @@ ani = animation.FuncAnimation(
     interval=FPS,
     blit=False,
 )
+
+if SAVE:
+    ani.save(filename=VID_FILENAME, writer="ffmpeg")
 
 plt.show()
