@@ -140,5 +140,34 @@ class System:
             spring = Spring(k, s_len, mps[0], mps[1])
             self.springs.append(spring)
 
+        # Add opposite velocities on the opposite sides of the lattice in y axis
+        velocity = Vector3D(0, 0.1, 0)
+
+        min_y = float("inf")
+        max_y = -float("inf")
+        for mp in self.mps:
+            if mp.coor.a2 < min_y:
+                min_y = mp.coor.a2
+            if mp.coor.a2 > max_y:
+                max_y = mp.coor.a2
+
+        min_y_sec = float("inf")
+        max_y_sec = -float("inf")
+        for mp in self.mps:
+            if mp.coor.a2 < min_y_sec and mp.coor.a2 > min_y:
+                min_y_sec = mp.coor.a2
+            if mp.coor.a2 > max_y_sec and mp.coor.a2 < max_y:
+                max_y_sec = mp.coor.a2
+
+        n_min = 0
+        n_max = 0
+        for mp in self.mps:
+            if mp.coor.a2 in [min_y, min_y_sec]:
+                mp.v = velocity
+                n_min += 1
+            elif mp.coor.a2 in [max_y, max_y_sec]:
+                mp.v = velocity * -1
+                n_max += 1
+
     def simulate(self, t, dt):
         self.__solver(self.mps, t, dt)
