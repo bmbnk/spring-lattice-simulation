@@ -1,4 +1,7 @@
+import pickle as pkl
 from typing import Callable
+
+HINGE_POTENTIAL_FORCES_PATH = "./math/3body_forces.pkl"
 
 
 class Vector3D:
@@ -121,6 +124,52 @@ class Spring:
     def force_val(self):
         l = (self.mp2.coor - self.mp1.coor).len()
         return -self.__k * (l - self.__l0)
+
+
+class HingePotential:
+    def __init__(self, spring1, spring2, k, theta0):
+        self.sp1 = spring1
+        self.sp2 = spring2
+        self.__k = k
+        self.__theta0 = theta0
+        self.__common_mp = None
+        self.__edge_mps = None
+        self.__forces_funcs = None
+
+        for sp1mp in self.sp1.mps:
+            for sp2mp in self.sp2.mps:
+                if sp1mp is sp2mp:
+                    self.__common_mp = sp1mp
+                    break
+
+        self.__edge_mps = [
+            mp for mp in self.sp1.mps + self.sp2.mps if mp is not self.__common_mp
+        ]
+
+        with open(HINGE_POTENTIAL_FORCES_PATH, "rb") as f:
+            self.__forces_funcs = pkl.load(f)
+
+        self.__common_mp.add_force(self.force_mp2)
+        self.__edge_mps[0].add_force(self.force_mp1)
+        self.__edge_mps[1].add_force(self.force_mp3)
+
+    def __force_args(self):
+        return (
+            self.__edge_mps[0].coor,
+            self.__common_mp.coor,
+            self.__edge_mps[1].coor,
+            self.__k,
+            self.__theta0,
+        )
+
+    def force_mp1(self):
+        return self.__forces_funcs["force1"](*self.__force_args())
+
+    def force_mp2(self):
+        return self.__forces_funcs["force2"](*self.__force_args())
+
+    def force_mp3(self):
+        return self.__forces_funcs["force"](*self.__force_args())
 
 
 class System:
