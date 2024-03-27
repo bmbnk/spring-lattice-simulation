@@ -1,47 +1,52 @@
-import math
 from typing import Callable
 
 
 class Vector3D:
-    def __init__(self, a1, a2, a3):
-        self.a1 = a1
-        self.a2 = a2
-        self.a3 = a3
+    def __init__(self, x, y, z):
+        self.__coors = [x, y, z]
 
     def __add__(self, other):
-        return Vector3D(self.a1 + other.a1, self.a2 + other.a2, self.a3 + other.a3)
+        return Vector3D(*[self[i] + other[i] for i in range(3)])
+
+    def __eq__(self, v):
+        return all([self[i] == v[i] for i in range(3)])
+
+    def __getitem__(self, idx):
+        if idx not in [0, 1, 2]:
+            raise IndexError
+        return self.__coors[idx]
+
+    def __matmul__(self, other):
+        return sum([self[i] * other[i] for i in range(3)])
 
     def __mul__(self, a):
         assert isinstance(a, (int, float))
+        return Vector3D(*[a * coor for coor in self])
 
-        result = Vector3D(self.a1, self.a2, self.a3)
-        result.a1 *= a
-        result.a2 *= a
-        result.a3 *= a
+    def __neg__(self):
+        return Vector3D(*[-coor for coor in self])
 
-        return result
+    def __repr__(self):
+        return f"{self.__class__.__name__}" + "(" + ", ".join(*self) + ")"
 
     def __rmul__(self, a):
         return self * a
 
-    def __eq__(self, v):
-        return all((self.a1 == v.a1, self.a2 == v.a2, self.a3 == v.a3))
+    def __setitem__(self, idx, val):
+        assert isinstance(val, (int, float))
+        if idx not in [0, 1, 2]:
+            raise IndexError
+        self.__coors[idx] = val
+
+    def __sub__(self, other):
+        return self + (-other)
 
     def __truediv__(self, a):
         self *= 1 / a
         return self
 
     def len(self):
-        return math.sqrt(self.a1**2 + self.a2**2 + self.a3**2)
-
-    def __matmul__(self, other):
-        return self.a1 * other.a1 + self.a2 * other.a2 + self.a3 * other.a3
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.a1}, {self.a2}, {self.a3})"
-
-    def __sub__(self, other):
-        return Vector3D(self.a1 - other.a1, self.a2 - other.a2, self.a3 - other.a3)
+        return sum([coor**2 for coor in self]) ** (1 / 2)
 
     def normalize(self):
         self /= self.len()
@@ -57,8 +62,12 @@ class MassPoint:
         self.__v_history = []
         self.__forces = set()
 
-    def add_force(self, force: Callable):
-        self.__forces.add(force)
+    @property
+    def a(self):
+        a = Vector3D(0, 0, 0)
+        for f in self.__forces:
+            a += f()
+        return a / self.m
 
     @property
     def coor(self):
@@ -68,13 +77,6 @@ class MassPoint:
     def coor(self, value):
         self.__coor = value
         self.__coor_history.append(value)
-
-    @property
-    def a(self):
-        a = Vector3D(0, 0, 0)
-        for f in self.__forces:
-            a += f()
-        return a / self.m
 
     @property
     def history(self):
@@ -92,6 +94,9 @@ class MassPoint:
     def v(self, value):
         self.__v = value
         self.__v_history.append(value)
+
+    def add_force(self, force: Callable):
+        self.__forces.add(force)
 
 
 class Spring:

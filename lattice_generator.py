@@ -36,7 +36,7 @@ def hex_lattice(n_hex_rows, n_hex_cols, l1, l2, alpha):
         Vector3D(0, 1, 0) + Vector3D(-1, 0, 0) * math.tan(alpha - math.pi / 2)
     ).normalize() * l2
     l2_vec_down = Vector3D(0, 0, 0) + l2_vec_up
-    l2_vec_down.a1 *= -1
+    l2_vec_down[0] *= -1
 
     coors = []
     connections = []

@@ -18,15 +18,15 @@ def update_fig(frame, system, scats, line):
 
     for scat, mp in zip(scats, system.mps):
         coor = mp.history[0][time]
-        scat.set_data(([coor.a1], [coor.a2]))
-        scat.set_3d_properties(coor.a3)
+        scat.set_data(([coor[0]], [coor[1]]))
+        scat.set_3d_properties(coor[2])
 
     for line, spring in zip(lines, system.springs):
         coor1 = spring.mp1.history[0][time]
         coor2 = spring.mp2.history[0][time]
 
-        line.set_data(([coor1.a1, coor2.a1], [coor1.a2, coor2.a2]))
-        line.set_3d_properties([coor1.a3, coor2.a3])
+        line.set_data(([coor1[0], coor2[0]], [coor1[1], coor2[1]]))
+        line.set_3d_properties([coor1[2], coor2[2]])
     return scats
 
 
@@ -39,15 +39,15 @@ ax = fig.add_subplot(projection="3d")
 
 scats = [
     ax.plot(
-        mp.history[0][0].a1, mp.history[0][0].a2, mp.history[0][0].a3, c="r", marker="o"
+        mp.history[0][0][0], mp.history[0][0][1], mp.history[0][0][2], c="r", marker="o"
     )[0]
     for mp in system.mps
 ]
 lines = [ax.plot([], [], [])[0] for _ in range(len(system.springs))]
 
 
-ax.set(xlim3d=(0, 50), xlabel="X")
-ax.set(ylim3d=(0, 50), ylabel="Y")
+ax.set(xlim3d=(0, 100), xlabel="X")
+ax.set(ylim3d=(0, 100), ylabel="Y")
 ax.set(zlim3d=(-50, 50), zlabel="Z")
 
 
