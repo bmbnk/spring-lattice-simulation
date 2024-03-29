@@ -3,14 +3,17 @@ import pickle as pkl
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
+SAVE = True
+VID_FILENAME = "test.mp4"
+DATA_DIR = "./data/system.pkl"
+
+AZIM_ANGLE = 45
+ELEV_ANGLE = 60
+
 DT = 1e-2
 SPEED_FACTOR = 50
 FPS = 60
 SIM_STEP = int(SPEED_FACTOR / DT / FPS)
-SAVE = False
-VID_FILENAME = "test.mp4"
-
-DATA_DIR = "./data/system.pkl"
 
 
 def update_fig(frame, system, scats, line):
@@ -46,6 +49,7 @@ scats = [
 lines = [ax.plot([], [], [])[0] for _ in range(len(system.springs))]
 
 
+ax.view_init(elev=ELEV_ANGLE, azim=AZIM_ANGLE)
 ax.set(xlim3d=(0, 100), xlabel="X")
 ax.set(ylim3d=(0, 100), ylabel="Y")
 ax.set(zlim3d=(-50, 50), zlabel="Z")
