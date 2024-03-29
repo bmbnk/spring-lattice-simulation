@@ -74,13 +74,16 @@ class MassPoint:
         self.__coor_history = []
         self.__v_history = []
         self.__forces = set()
+        self.__f_history = []
 
     @property
     def a(self):
-        a = Vector3D(0, 0, 0)
+        f_overall = Vector3D(0, 0, 0)
         for f in self.__forces:
-            a += f()
-        return a / self.m
+            f_overall += f()
+
+        self.__f_history.append(f_overall)
+        return f_overall / self.m
 
     @property
     def coor(self):
@@ -93,7 +96,7 @@ class MassPoint:
 
     @property
     def history(self):
-        return (self.__coor_history, self.__v_history)
+        return (self.__coor_history, self.__v_history, self.__f_history)
 
     @property
     def m(self):
