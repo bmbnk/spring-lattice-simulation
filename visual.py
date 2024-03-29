@@ -7,6 +7,8 @@ SAVE = True
 VID_FILENAME = "test.mp4"
 DATA_DIR = "./data/system.pkl"
 
+DPI = 100
+RESOLUTION = (2560, 1440)
 AZIM_ANGLE = 45
 ELEV_ANGLE = 60
 
@@ -66,6 +68,9 @@ ani = animation.FuncAnimation(
 )
 
 if SAVE:
+    w = RESOLUTION[0] // DPI
+    h = RESOLUTION[1] // DPI
+    fig.set_size_inches(w, h, True)
     ani.save(filename=VID_FILENAME, writer="ffmpeg")
 
 plt.show()
