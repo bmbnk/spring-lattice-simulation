@@ -1,10 +1,14 @@
 from typing import Iterable
 
+import tqdm
+
 from physics import MassPoint
 
 
-def euler(mps: Iterable[MassPoint], t, dt):
+def euler(mps: Iterable[MassPoint], t, dt, pbar=False):
     steps = range(int(t / dt))
+    if pbar:
+        steps = tqdm.tqdm(steps)
 
     for _ in steps:
         for mp in mps:
@@ -12,8 +16,10 @@ def euler(mps: Iterable[MassPoint], t, dt):
             mp.v += mp.a * dt
 
 
-def verlet(mps: Iterable[MassPoint], t, dt):
+def verlet(mps: Iterable[MassPoint], t, dt, pbar=False):
     steps = range(int(t / dt))
+    if pbar:
+        steps = tqdm.tqdm(steps)
 
     a_prev = [mp.a for mp in mps]
 

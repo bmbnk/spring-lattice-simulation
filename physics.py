@@ -260,4 +260,4 @@ class System:
             add_hinge_potential(self.springs, hinge_k)
 
     def simulate(self, t, dt):
-        self.__solver(self.mps, t, dt)
+        self.__solver(self.mps, t, dt, pbar=True)
