@@ -199,8 +199,34 @@ class HingePotential:
         return self.__force(3)
 
 
+def add_hinge_potential(springs: list[Spring], k):
+    sset = set(springs)
+    vert_springs = set()
+
+    for s in sset:
+        r12 = s.mp1.coor - s.mp2.coor
+        if r12.len() in r12:
+            vert_springs.add(r12)
+
+    for vs in vert_springs:
+        for vs_mpcoor in [vs.mp1.coor, vs.mp2.coor]:
+            for s in sset - vert_springs:
+                if vs_mpcoor in [s.mp1.coor, s.mp2.coor]:
+                    HingePotential(vs, s, k)
+
+
 class System:
-    def __init__(self, coors, masses, connections, k_vals, s_lenghts, solver):
+    def __init__(
+        self,
+        coors,
+        masses,
+        connections,
+        k_vals,
+        s_lenghts,
+        solver,
+        hinge_potential=False,
+        hinge_k=0.01,
+    ):
         assert len(coors) == len(masses)
         assert len(connections) == len(k_vals) == len(s_lenghts)
 
@@ -208,9 +234,15 @@ class System:
         self.springs = []
         self.__solver = solver
 
-        for c, m in zip(coors, masses):
+        for i, (c, m) in enumerate(zip(coors, masses)):
             mp = MassPoint(m, c, Vector3D(0, 0, 0))
             self.mps.append(mp)
+
+            ### Add off the plane velocity to the middle point ###
+            if i == len(coors) // 2:
+                v_val = 1
+                v = Vector3D(1, 1, 1).normalize() * v_val
+                mp.v = v
 
         for con, k, s_len in zip(connections, k_vals, s_lenghts):
             mps = []
@@ -220,6 +252,9 @@ class System:
 
             spring = Spring(k, s_len, mps[0], mps[1])
             self.springs.append(spring)
+
+        if hinge_potential:
+            add_hinge_potential(self.springs, hinge_k)
 
     def simulate(self, t, dt):
         self.__solver(self.mps, t, dt)
