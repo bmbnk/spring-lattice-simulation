@@ -1,7 +1,7 @@
-import pickle as pkl
+import math
 from typing import Callable
 
-HINGE_POTENTIAL_FORCES_PATH = "./math/3body_forces.pkl"
+import torch
 
 
 class Vector3D:
@@ -29,8 +29,18 @@ class Vector3D:
     def __neg__(self):
         return Vector3D(*[-coor for coor in self])
 
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        return self.__add__(other)
+
     def __repr__(self):
-        return f"{self.__class__.__name__}" + "(" + ", ".join(*self) + ")"
+        return (
+            f"{self.__class__.__name__}"
+            + "("
+            + ", ".join([str(coor) for coor in self])
+            + ")"
+        )
 
     def __rmul__(self, a):
         return self * a
@@ -127,49 +137,66 @@ class Spring:
 
 
 class HingePotential:
-    def __init__(self, spring1, spring2, k, theta0):
+    def __init__(self, spring1, spring2, k):
         self.sp1 = spring1
         self.sp2 = spring2
         self.__k = k
-        self.__theta0 = theta0
         self.__common_mp = None
         self.__edge_mps = None
-        self.__forces_funcs = None
 
-        for sp1mp in self.sp1.mps:
-            for sp2mp in self.sp2.mps:
+        sp1mps = [self.sp1.mp1, self.sp1.mp2]
+        sp2mps = [self.sp2.mp1, self.sp2.mp2]
+
+        for sp1mp in sp1mps:
+            for sp2mp in sp2mps:
                 if sp1mp is sp2mp:
                     self.__common_mp = sp1mp
                     break
 
-        self.__edge_mps = [
-            mp for mp in self.sp1.mps + self.sp2.mps if mp is not self.__common_mp
-        ]
+        self.__edge_mps = [mp for mp in sp1mps + sp2mps if mp is not self.__common_mp]
 
-        with open(HINGE_POTENTIAL_FORCES_PATH, "rb") as f:
-            self.__forces_funcs = pkl.load(f)
+        r1 = self.__edge_mps[0].coor - self.__common_mp.coor
+        r2 = self.__edge_mps[1].coor - self.__common_mp.coor
+        self.__theta0 = math.acos((r1 @ r2) / (r1.len() * r2.len()))
 
         self.__common_mp.add_force(self.force_mp2)
         self.__edge_mps[0].add_force(self.force_mp1)
         self.__edge_mps[1].add_force(self.force_mp3)
 
-    def __force_args(self):
-        return (
-            self.__edge_mps[0].coor,
-            self.__common_mp.coor,
-            self.__edge_mps[1].coor,
-            self.__k,
-            self.__theta0,
+    def __force(self, i):
+        """i is an index for node: 1, 2, 3 - where 2 is the node in the middle"""
+        rs = [
+            torch.tensor([float(c) for c in self.__edge_mps[0].coor]),
+            torch.tensor([float(c) for c in self.__common_mp.coor]),
+            torch.tensor([float(c) for c in self.__edge_mps[1].coor]),
+        ]
+
+        rs[i - 1].requires_grad_()
+
+        r12 = rs[0] - rs[1]
+        r32 = rs[2] - rs[1]
+        v = (
+            -self.__k
+            * (
+                torch.acos((torch.dot(r32, r12)) / (torch.norm(r32) * torch.norm(r12)))
+                - torch.pi / 3
+            )
+            ** 2
+            / 2
         )
 
+        v.backward()
+        f = Vector3D(*[float(a) for a in rs[i - 1].grad])
+        return f
+
     def force_mp1(self):
-        return self.__forces_funcs["force1"](*self.__force_args())
+        return self.__force(1)
 
     def force_mp2(self):
-        return self.__forces_funcs["force2"](*self.__force_args())
+        return self.__force(2)
 
     def force_mp3(self):
-        return self.__forces_funcs["force"](*self.__force_args())
+        return self.__force(3)
 
 
 class System:
