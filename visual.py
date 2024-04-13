@@ -4,7 +4,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
 SAVE = True
-VID_FILENAME = "test.mp4"
+VID_PATH = "sim.mp4"
 DATA_DIR = "./data/system.pkl"
 
 DPI = 100
@@ -71,6 +71,6 @@ if SAVE:
     w = RESOLUTION[0] // DPI
     h = RESOLUTION[1] // DPI
     fig.set_size_inches(w, h, True)
-    ani.save(filename=VID_FILENAME, writer="ffmpeg")
+    ani.save(filename=VID_PATH, writer="ffmpeg")
 
 plt.show()
