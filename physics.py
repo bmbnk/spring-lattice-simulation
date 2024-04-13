@@ -203,17 +203,19 @@ class HingePotential:
 
 
 def add_hinge_potential(springs: list[Spring], k):
-    sset = set(springs)
-    vert_springs = set()
+    vert_springs = []
+    nvert_springs = []
 
-    for s in sset:
+    for s in springs:
         r12 = s.mp1.coor - s.mp2.coor
-        if r12.len() in r12:
-            vert_springs.add(r12)
+        if r12.len() in r12 or -r12.len() in r12:
+            vert_springs.append(s)
+        else:
+            nvert_springs.append(s)
 
     for vs in vert_springs:
         for vs_mpcoor in [vs.mp1.coor, vs.mp2.coor]:
-            for s in sset - vert_springs:
+            for s in nvert_springs:
                 if vs_mpcoor in [s.mp1.coor, s.mp2.coor]:
                     HingePotential(vs, s, k)
 
