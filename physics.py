@@ -202,24 +202,6 @@ class HingePotential:
         return self.__force(3)
 
 
-def add_hinge_potential(springs: list[Spring], k):
-    vert_springs = []
-    nvert_springs = []
-
-    for s in springs:
-        r12 = s.mp1.coor - s.mp2.coor
-        if r12.len() in r12 or -r12.len() in r12:
-            vert_springs.append(s)
-        else:
-            nvert_springs.append(s)
-
-    for vs in vert_springs:
-        for vs_mpcoor in [vs.mp1.coor, vs.mp2.coor]:
-            for s in nvert_springs:
-                if vs_mpcoor in [s.mp1.coor, s.mp2.coor]:
-                    HingePotential(vs, s, k)
-
-
 class System:
     def __init__(
         self,
@@ -229,7 +211,8 @@ class System:
         k_vals,
         s_lenghts,
         solver,
-        hinge_potential=False,
+        squeeze=True,
+        hinge_potential=True,
         hinge_k=0.01,
     ):
         assert len(coors) == len(masses)
@@ -244,10 +227,10 @@ class System:
             self.mps.append(mp)
 
             ### Add off the plane velocity to the middle point ###
-            if i == len(coors) // 2:
-                v_val = 1
-                v = Vector3D(1, 1, 1).normalize() * v_val
-                mp.v = v
+            # if i == len(coors) // 2:
+            #     v_val = 1
+            #     v = Vector3D(1, 1, 1).normalize() * v_val
+            #     mp.v = v
 
         for con, k, s_len in zip(connections, k_vals, s_lenghts):
             mps = []
@@ -259,7 +242,55 @@ class System:
             self.springs.append(spring)
 
         if hinge_potential:
-            add_hinge_potential(self.springs, hinge_k)
+            self.__add_hinge_potential(self.springs, hinge_k)
+
+        if squeeze:
+            self.__squeeze()
 
     def simulate(self, t, dt):
         self.__solver(self.mps, t, dt, pbar=True)
+
+    def __add_hinge_potential(self, springs: list[Spring], k):
+        vert_springs = []
+        nvert_springs = []
+
+        for s in springs:
+            r12 = s.mp1.coor - s.mp2.coor
+            if r12.len() in r12 or -r12.len() in r12:
+                vert_springs.append(s)
+            else:
+                nvert_springs.append(s)
+
+        for vs in vert_springs:
+            for vs_mpcoor in [vs.mp1.coor, vs.mp2.coor]:
+                for s in nvert_springs:
+                    if vs_mpcoor in [s.mp1.coor, s.mp2.coor]:
+                        HingePotential(vs, s, k)
+
+    def __squeeze(self, velocity=Vector3D(0, 0.1, 0)):
+        """Add opposite velocities on the opposite sides of the lattice in y axis"""
+        min_y = float("inf")
+        max_y = -float("inf")
+        for mp in self.mps:
+            if mp.coor[1] < min_y:
+                min_y = mp.coor[1]
+            if mp.coor[1] > max_y:
+                max_y = mp.coor[1]
+
+        min_y_sec = float("inf")
+        max_y_sec = -float("inf")
+        for mp in self.mps:
+            if mp.coor[1] < min_y_sec and mp.coor[1] > min_y:
+                min_y_sec = mp.coor[1]
+            if mp.coor[1] > max_y_sec and mp.coor[1] < max_y:
+                max_y_sec = mp.coor[1]
+
+        n_min = 0
+        n_max = 0
+        for mp in self.mps:
+            if mp.coor[1] in [min_y, min_y_sec]:
+                mp.v = velocity
+                n_min += 1
+            elif mp.coor[1] in [max_y, max_y_sec]:
+                mp.v = velocity * -1
+                n_max += 1
