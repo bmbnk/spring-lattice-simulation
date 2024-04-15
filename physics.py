@@ -267,30 +267,29 @@ class System:
                     if vs_mpcoor in [s.mp1.coor, s.mp2.coor]:
                         HingePotential(vs, s, k)
 
-    def __squeeze(self, velocity=Vector3D(0, 0.1, 0)):
+    def __squeeze(self, velocity=0.1, ax=1):
         """Add opposite velocities on the opposite sides of the lattice in y axis"""
-        min_y = float("inf")
-        max_y = -float("inf")
-        for mp in self.mps:
-            if mp.coor[1] < min_y:
-                min_y = mp.coor[1]
-            if mp.coor[1] > max_y:
-                max_y = mp.coor[1]
+        v = Vector3D(0, 0, 0)
+        v[ax] = velocity
 
-        min_y_sec = float("inf")
-        max_y_sec = -float("inf")
+        min_dim = float("inf")
+        max_dim = -float("inf")
         for mp in self.mps:
-            if mp.coor[1] < min_y_sec and mp.coor[1] > min_y:
-                min_y_sec = mp.coor[1]
-            if mp.coor[1] > max_y_sec and mp.coor[1] < max_y:
-                max_y_sec = mp.coor[1]
+            if mp.coor[ax] < min_dim:
+                min_dim = mp.coor[ax]
+            if mp.coor[ax] > max_dim:
+                max_dim = mp.coor[ax]
 
-        n_min = 0
-        n_max = 0
+        min_dim_sec = float("inf")
+        max_dim_sec = -float("inf")
         for mp in self.mps:
-            if mp.coor[1] in [min_y, min_y_sec]:
-                mp.v = velocity
-                n_min += 1
-            elif mp.coor[1] in [max_y, max_y_sec]:
-                mp.v = velocity * -1
-                n_max += 1
+            if mp.coor[ax] < min_dim_sec and mp.coor[ax] > min_dim:
+                min_dim_sec = mp.coor[ax]
+            if mp.coor[ax] > max_dim_sec and mp.coor[ax] < max_dim:
+                max_dim_sec = mp.coor[ax]
+
+        for mp in self.mps:
+            if mp.coor[ax] in [min_dim, min_dim_sec]:
+                mp.v = v
+            elif mp.coor[ax] in [max_dim, max_dim_sec]:
+                mp.v = v * -1
