@@ -182,7 +182,7 @@ class HingePotential:
             -self.__k
             * (
                 torch.acos((torch.dot(r32, r12)) / (torch.norm(r32) * torch.norm(r12)))
-                - torch.pi / 3
+                - self.__theta0
             )
             ** 2
             / 2
