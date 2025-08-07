@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 SAVE = True
 VID_PATH = "sim.mp4"
-DATA_DIR = "./data/system.pkl"
+DATA_DIR = "./system.pkl"
 
 DPI = 100
 RESOLUTION = (2560, 1440)
